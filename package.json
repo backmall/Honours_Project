@@ -1,0 +1,25 @@
+{
+  "name": "honours_project",
+  "version": "1.0.0",
+  "description": "Server starting point for honours project",
+  "main": "startup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backmall/Honours_Project.git"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "express": "^4.17.3",
+    "python": "^0.0.4",
+    "python-shell": "^3.0.1"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/backmall/Honours_Project/issues"
+  },
+  "homepage": "https://github.com/backmall/Honours_Project#readme"
+}

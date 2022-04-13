@@ -1,0 +1,6 @@
+DBFolder/
+node_modules/
+backupFolder/test_logs
+testLogs/
+test_logs
+__pycache__/

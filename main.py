@@ -1,3 +1,4 @@
+#uvicorn main:app --reload
 from typing import Optional
 from urllib import response
 
@@ -35,8 +36,6 @@ with open('test_logs', 'rb') as f:
 
 with open('testLogs/newLogs', 'rb') as f:
     newLogs = pickle.load(f)
-
-print(newLogs)
 
 
 #testTail = newLogs.iloc[0]
@@ -92,10 +91,18 @@ def read_root():
                     text-align: center;
                 }
 
+                #main {
+                    display:flex;
+                    flex-direction: column;
+                    justify-content: space-evenly;
+                    width: 100%;
+                }
+
                 #logBox {
                     display: flex;
+                    justify-self: center;
                     max-height: 300px;
-                    overflow-x: scroll;
+                    overflow-x: auto;
                     overflow-y: auto;
 
                 }
@@ -104,6 +111,62 @@ def read_root():
                     justify-content: center;
                     text-align: center;
                 }
+                #newLogBox {
+                    display: flex;
+                    justify-self: center;
+                    max-height: 300px;
+                    overflow-x: auto;
+                    overflow-y: auto;
+                }
+
+                .tooltiptext {
+                    visibility: hidden;
+                    width: 120px;
+                    background-color: black;
+                    color: #fff;
+                    text-align: center;
+                    border-radius: 6px;
+                    padding: 5px 0;
+                    
+                    /* Position the tooltip */
+                    position: absolute;
+                    z-index: 1;
+                    top: 100%;
+                    left: 50%;
+                    margin-left: -60px;
+                }
+                .tooltip:hover .tooltiptext {
+                    visibility: visible;
+                }
+                .tooltip {
+                    position: relative;
+                }
+                table, th, td {
+                    border: 1px solid grey;
+                    border-collapse: collapse;
+                    font-size: 20px;
+                }
+                th {
+                    background-color: orange;
+                }
+
+                tr {
+                    text-align: center;
+                    vertical-align: text-top;
+                }
+
+                .normal {
+                    text-align: center;
+                    vertical-align: text-top;
+                    background-color: #8cff8c;
+                }
+                .malicious {
+                    text-align: center;
+                    vertical-align: text-top;
+                    background-color: #ff7979;
+                }
+
+
 
                 @property --p{
                 syntax: '<number>';
@@ -172,7 +235,7 @@ def read_root():
                 <div id="topBox">
                     <div id="charts">
                         <div id="ratioBox">
-                            <div id="ratio" class="pie animate" style="--p:80;--c:orange;"></div>
+                            <div id="ratio" class="pie animate" style="--p:0;--c:orange;"></div>
                             <div id="ratioText">Percentage of attacks</div>
                         </div>
                         <div id="accuracyBox">
@@ -188,63 +251,118 @@ def read_root():
                 <div class="title">
                 <h1>Recent predictions</h1>
                 </div>
-                <div id="logBox">
-                    <table id="logs">
-                        <thead>
-                            <tr>
-                                <th>duration</th>
-                                <th>protocol_type</th>
-                                <th>service</th>
-                                <th>flag</th>
-                                <th>src_bytes</th>
-                                <th>dst_bytes</th>
-                                <th>land</th>
-                                <th>wrong_fragment</th>
-                                <th>urgent</th>
-                                <th>hot</th>
-                                <th>num_failed_logins</th>
-                                <th>logged_in</th>
-                                <th>num_compromised</th>
-                                <th>root_shell</th>
-                                <th>su_attempted</th>
-                                <th>num_root</th>
-                                <th>num_file_creations</th>
-                                <th>num_shells</th>
-                                <th>num_access_files</th>
-                                <th>num_outbound_cmds</th>
-                                <th>is_host_login</th>
-                                <th>is_guest_login</th>
-                                <th>count</th>
-                                <th>srv_count</th>
-                                <th>serror_rate</th>
-                                <th>srv_serror_rate</th>
-                                <th>rerror_rate</th>
-                                <th>srv_rerror_rate</th>
-                                <th>same_srv_rate</th>
-                                <th>diff_srv_rate</th>
-                                <th>srv_diff_host_rate</th>
-                                <th>dst_host_count</th>
-                                <th>dst_host_srv_count</th>
-                                <th>dst_host_same_srv_rate</th>
-                                <th>dst_host_diff_srv_rate</th>
-                                <th>dst_host_same_src_port_rate</th>
-                                <th>dst_host_srv_diff_host_rate</th>
-                                <th>dst_host_serror_rate</th>
-                                <th>dst_host_srv_serror_rate</th>
-                                <th>dst_host_rerror_rate</th>
-                                <th>dst_host_srv_rerror_rate</th>
-                                <th>STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
+                <div id="main">
                 
-                <div class="title">
-                <h1>New connection logs</h1>
-                </div>
+                    <div id="logBox">
+                        <table id="logs">
+                            <thead>
+                                <tr>
+                                    <th class="tooltip">dur<span class="tooltiptext">duration</span></th>
+                                    <th class="tooltip">protocol<span class="tooltiptext">protocol type</span></th>
+                                    <th class="tooltip">service<span class="tooltiptext">service</span></th>
+                                    <th class="tooltip">flag<span class="tooltiptext">flag</span></th>
+                                    <th class="tooltip">src_b<span class="tooltiptext">number of source bytes</span></th>
+                                    <th class="tooltip">dst_b<span class="tooltiptext">number of destination bytes</span></th>
+                                    <th class="tooltip">land<span class="tooltiptext">is the connection from the same host; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">frag<span class="tooltiptext">number of wrong fragments</span></th>
+                                    <th class="tooltip">ur<span class="tooltiptext">number of urgent packets</span></th>
+                                    <th class="tooltip">hot<span class="tooltiptext">number of hot indicators</span></th>
+                                    <th class="tooltip">fail<span class="tooltiptext">number of failed login attempts</span></th>
+                                    <th class="tooltip">logg<span class="tooltiptext">is the connection logged in; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">num_c<span class="tooltiptext">number of compromised conditions</span></th>
+                                    <th class="tooltip">r_shell<span class="tooltiptext">is root shell obtained; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">su<span class="tooltiptext">is "su root" command attempted; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">root<span class="tooltiptext">number of "root" accesses</span></th>
+                                    <th class="tooltip">create<span class="tooltiptext">number of file creation operations</span></th>
+                                    <th class="tooltip">shells<span class="tooltiptext">number of shell prompts</span></th>
+                                    <th class="tooltip">a_files<span class="tooltiptext">number of operations to access control files</span></th>
+                                    <th class="tooltip">cmds<span class="tooltiptext">number of outbound commands in an ftp session</span></th>
+                                    <th class="tooltip">hot_l<span class="tooltiptext">does login belong to "hot" list; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">guest<span class="tooltiptext">is it a "gues" login; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">count<span class="tooltiptext">number of connections to the same host</span></th>
+                                    <th class="tooltip">s_1<span class="tooltiptext">number of connections to the same service</span></th>
+                                    <th class="tooltip">s_2<span class="tooltiptext">percentage of connection with "SYN" error</span></th>
+                                    <th class="tooltip">s_3<span class="tooltiptext">ratio of serror rate</span></th>
+                                    <th class="tooltip">r_1<span class="tooltiptext">percentage of connections with "REJ" error</span></th>
+                                    <th class="tooltip">r_2<span class="tooltiptext">ratio of rerror rate</span></th>
+                                    <th class="tooltip">r_3<span class="tooltiptext">percentage of connections to the same service</span></th>
+                                    <th class="tooltip">d_1<span class="tooltiptext">percentage of connections to different service</span></th>
+                                    <th class="tooltip">d_2<span class="tooltiptext">percentage of connections to different hosts</span></th>
+                                    <th class="tooltip">d_3<span class="tooltiptext">number of connections to host</span></th>
+                                    <th class="tooltip">d_4<span class="tooltiptext">number of connections to host services</span></th>
+                                    <th class="tooltip">d_5<span class="tooltiptext">percentage of connections to same service at host</span></th>
+                                    <th class="tooltip">d_6<span class="tooltiptext">percentage of connections to different service at host</span></th>
+                                    <th class="tooltip">d_7<span class="tooltiptext">percentage of connections to the same port at host</span></th>
+                                    <th class="tooltip">d_8<span class="tooltiptext">percentage of connections to different port at host</span></th>
+                                    <th class="tooltip">d_9<span class="tooltiptext">percentage of connections with "SYN" error at host</span></th>
+                                    <th class="tooltip">d_10<span class="tooltiptext">ratio of serror rate at host </span></th>
+                                    <th class="tooltip">d_11<span class="tooltiptext">percentage of connection with "REJ" error at host</span></th>
+                                    <th class="tooltip">d_12<span class="tooltiptext">ratio of rerror rate at host</span></th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentLogs">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="title">
+                    <h1>New connection logs</h1>
+                    </div>
 
+                    <div id="newlogBox">
+                        <table id="newlogs">
+                            <thead>
+                                <tr>
+                                    <th class="tooltip">dur<span class="tooltiptext">duration</span></th>
+                                    <th class="tooltip">protocol<span class="tooltiptext">protocol type</span></th>
+                                    <th class="tooltip">service<span class="tooltiptext">service</span></th>
+                                    <th class="tooltip">flag<span class="tooltiptext">flag</span></th>
+                                    <th class="tooltip">src_b<span class="tooltiptext">number of source bytes</span></th>
+                                    <th class="tooltip">dst_b<span class="tooltiptext">number of destination bytes</span></th>
+                                    <th class="tooltip">land<span class="tooltiptext">is the connection from the same host; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">frag<span class="tooltiptext">number of wrong fragments</span></th>
+                                    <th class="tooltip">ur<span class="tooltiptext">number of urgent packets</span></th>
+                                    <th class="tooltip">hot<span class="tooltiptext">number of hot indicators</span></th>
+                                    <th class="tooltip">fail<span class="tooltiptext">number of failed login attempts</span></th>
+                                    <th class="tooltip">logg<span class="tooltiptext">is the connection logged in; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">num_c<span class="tooltiptext">number of compromised conditions</span></th>
+                                    <th class="tooltip">r_shell<span class="tooltiptext">is root shell obtained; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">su<span class="tooltiptext">is "su root" command attempted; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">root<span class="tooltiptext">number of "root" accesses</span></th>
+                                    <th class="tooltip">create<span class="tooltiptext">number of file creation operations</span></th>
+                                    <th class="tooltip">shells<span class="tooltiptext">number of shell prompts</span></th>
+                                    <th class="tooltip">a_files<span class="tooltiptext">number of operations to access control files</span></th>
+                                    <th class="tooltip">cmds<span class="tooltiptext">number of outbound commands in an ftp session</span></th>
+                                    <th class="tooltip">hot_l<span class="tooltiptext">does login belong to "hot" list; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">guest<span class="tooltiptext">is it a "gues" login; 1-yes, 0-no</span></th>
+                                    <th class="tooltip">count<span class="tooltiptext">number of connections to the same host</span></th>
+                                    <th class="tooltip">s_1<span class="tooltiptext">number of connections to the same service</span></th>
+                                    <th class="tooltip">s_2<span class="tooltiptext">percentage of connection with "SYN" error</span></th>
+                                    <th class="tooltip">s_3<span class="tooltiptext">ratio of serror rate</span></th>
+                                    <th class="tooltip">r_1<span class="tooltiptext">percentage of connections with "REJ" error</span></th>
+                                    <th class="tooltip">r_2<span class="tooltiptext">ratio of rerror rate</span></th>
+                                    <th class="tooltip">r_3<span class="tooltiptext">percentage of connections to the same service</span></th>
+                                    <th class="tooltip">d_1<span class="tooltiptext">percentage of connections to different service</span></th>
+                                    <th class="tooltip">d_2<span class="tooltiptext">percentage of connections to different hosts</span></th>
+                                    <th class="tooltip">d_3<span class="tooltiptext">number of connections to host</span></th>
+                                    <th class="tooltip">d_4<span class="tooltiptext">number of connections to host services</span></th>
+                                    <th class="tooltip">d_5<span class="tooltiptext">percentage of connections to same service at host</span></th>
+                                    <th class="tooltip">d_6<span class="tooltiptext">percentage of connections to different service at host</span></th>
+                                    <th class="tooltip">d_7<span class="tooltiptext">percentage of connections to the same port at host</span></th>
+                                    <th class="tooltip">d_8<span class="tooltiptext">percentage of connections to different port at host</span></th>
+                                    <th class="tooltip">d_9<span class="tooltiptext">percentage of connections with "SYN" error at host</span></th>
+                                    <th class="tooltip">d_10<span class="tooltiptext">ratio of serror rate at host </span></th>
+                                    <th class="tooltip">d_11<span class="tooltiptext">percentage of connection with "REJ" error at host</span></th>
+                                    <th class="tooltip">d_12<span class="tooltiptext">ratio of rerror rate at host</span></th>
+                                    <th class="predict">PREDICT</th>
+                                </tr>
+                            </thead>
+                            <tbody id="newLogs">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </body>
             <script>
                 function wrongPredictions(){
@@ -297,7 +415,7 @@ def read_root():
                     xhttp.open("GET", "/ratio/", true);
                     xhttp.send();
                 }
-                function doStuff() {
+                function getRecent() {
                     var xhttp = new XMLHttpRequest();
                     xhttp.onreadystatechange = function() {
                         if (this.readyState == 4 && this.status == 200) {
@@ -322,6 +440,7 @@ def read_root():
 
                                 tbody.appendChild(row);
                                 let dropDown = document.createElement("select");
+                                dropDown.setAttribute("class", "dropDown");
                                 var option1 = document.createElement("option");
                                 option1.value = "normal";
                                 option1.innerHTML = "normal";
@@ -357,12 +476,47 @@ def read_root():
                     xhttp.open("GET", "/items/5", true);
                     xhttp.send();
                 }
+
+                function getNew() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var myArr = JSON.parse(this.responseText);
+                            
+                            tbody = document.getElementsByTagName("tbody")[1];
+                            for(var k in myArr){
+                                row = document.createElement("tr");
+                                row.setAttribute("id", k);
+                                for(var n in myArr[k]){
+                                    cell = document.createElement("td");
+                                    cell.innerHTML = myArr[k][n];
+                                    row.appendChild(cell);
+                                }
+                                let predictButton = document.createElement("button");
+                                predictButton.setAttribute("class", "predictButton");
+                                predictButton.value = k;
+                                predictButton.innerHTML = "predict";
+                                let temp = row.id;
+                                predictButton.addEventListener("click", (event)=>{
+                                    //TODO
+                                    alert("predict" + temp);
+                                })
+                                row.appendChild(predictButton);
+                                tbody.appendChild(row);
+                            }
+                        }
+                    };
+                    xhttp.open("GET", "/newItems/5", true);
+                    xhttp.send();
+                }
+
                 async function makeRequest(){
                     ratio();
                     accuracy();
                     attackNumber();
                     wrongPredictions();
-                    doStuff();
+                    getRecent();
+                    getNew();
                 }
                 function selectStatus(id, status){
                     console.log("selected: " + id + "newStatus: " + status);
@@ -453,14 +607,83 @@ def read_item(items_number: int, q: Optional[str] = None):
         i=i-1
     return total
 
+#new items that weren't predicted yet
+@app.get("/newItems/{items_number}")
+def read_newitem(items_number: int, q: Optional[str] = None):
+
+    with open('testLogs/newLogs', 'rb') as f:
+        newLogs = pickle.load(f)
+    #i stands for how many iterations should there be
+    if(items_number > len(newLogs)):
+        i = len(newLogs)
+    else:
+        i = items_number
+    #get data and JSONify output
+    newtotal = {}
+    newitems = {}
+    for index, row in newLogs.iterrows():
+
+        if i<=0:
+            break
+        newitem = {
+            "duration": row[0],
+            "protocol_type": row[1],
+            "service": row[2],
+            "flag": row[3],
+            "src_bytes": row[4],
+            "dst_bytes": row[5],
+            "land": row[6],
+            "wrong_fragment": row[7],
+            "urgent": row[8],
+            "hot": row[9],
+            "num_failed_logins": row[10],
+            "logged_in": row[11],
+            "num_compromised": row[12],
+            "root_shell": row[13],
+            "su_attempted": row[14],
+            "num_root": row[15],
+            "num_file_creations": row[16],
+            "num_shells": row[17],
+            "num_access_files": row[18],
+            "num_outbound_cmds": row[19],
+            "is_host_login": row[20],
+            "is_guest_login": row[21],
+            "count": row[22],                              
+            "srv_count": row[23],                          
+            "serror_rate": row[24],                   
+            "srv_serror_rate": row[25],                   
+            "rerror_rate": row[26],                       
+            "srv_rerror_rate": row[27],                   
+            "same_srv_rate": row[28],                     
+            "diff_srv_rate": row[29],                     
+            "srv_diff_host_rate": row[30],               
+            "dst_host_count": row[31],                      
+            "dst_host_srv_count": row[32],                
+            "dst_host_same_srv_rate": row[33],            
+            "dst_host_diff_srv_rate": row[34],            
+            "dst_host_same_src_port_rate": row[35],       
+            "dst_host_srv_diff_host_rate": row[36],      
+            "dst_host_serror_rate": row[37],              
+            "dst_host_srv_serror_rate": row[38],        
+            "dst_host_rerror_rate": row[39],              
+            "dst_host_srv_rerror_rate": row[40]                          
+        }
+        newitems = {
+            index: newitem   
+            }
+        newtotal.update(newitems)
+        i=i-1
+    return newtotal
+
+
 #return model prediction
 @app.get("/predict/{logs}")
-def fit_model(array):
+def predict(array):
     prediction = newGrid.best_estimator_.predict(array)
     return prediction
 
 @app.get("/selectStatus/{index}/{newValue}")
-def fit_model(index: int, newValue):
+def select_status(index: int, newValue):
     with open('testLogs/newLogs', 'rb') as f:
         newLogs2 = pickle.load(f)
     newLogs2.at[index, "target"] = newValue

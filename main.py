@@ -4,6 +4,7 @@ from urllib import response
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 
 import pickle
 
@@ -55,6 +56,7 @@ def read_root():
         <html>
             <head>
                 <title>dashboard</title>
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
             </head>
             <style>
@@ -534,6 +536,10 @@ def read_root():
     """
     
     return HTMLResponse(content=html_content, status_code=200)
+
+@app.get('/favicon.ico')
+async def favicon():
+    return FileResponse("./media/icon.png")
 
 #return list of logs
 @app.get("/items/{items_number}")

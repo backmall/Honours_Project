@@ -21,8 +21,8 @@ import json
 with open('model_pickle', 'rb') as f:
     newGrid = pickle.load(f)
 #load test set with wrong predictions
-with open('wrongValues_pickle', 'rb') as f:
-    wrongValues = pickle.load(f)
+##with open('wrongValues_pickle', 'rb') as f:
+##    wrongValues = pickle.load(f)
 #load transform pipeline
 with open('full_pipeline_pickle', 'rb') as f:
     full_pipeline = pickle.load(f)
@@ -30,23 +30,33 @@ with open('full_pipeline_pickle', 'rb') as f:
 with open('target_encoder_pickle', 'rb') as f:
     target_encoder = pickle.load(f)
 #load original logs used to train model
-with open('logs', 'rb') as f:
-    original_logs = pickle.load(f)
+##with open('logs', 'rb') as f:
+##    original_logs = pickle.load(f)
 #load test set of logs
-with open('test_logs', 'rb') as f:
-    test_logs = pickle.load(f)
+##with open('test_logs', 'rb') as f:
+##    test_logs = pickle.load(f)
 
-with open('testLogs/newLogs', 'rb') as f:
-    newLogs = pickle.load(f)
+##with open('testLogs/newLogs', 'rb') as f:
+##    newLogs = pickle.load(f)
+
+#with open('pickleLogs/recentLogs', 'rb') as f:
+#    logs = pickle.load(f)
+#    print(logs['target'].value_counts())
+#    print(logs.head())
+#    dropLogs = logs[logs.target != "probe"]
+#    print(dropLogs['target'].value_counts())
+#    print(dropLogs.head())
 
 
-id = 4898426
-single = newLogs.loc[id]
-singleDF = single.to_frame()
-singleDF = singleDF.T
-singlePrepared=full_pipeline.transform(singleDF)
-prediction = newGrid.best_estimator_.predict(singlePrepared)
-print(prediction)
+#id = 4898426
+#single = newLogs.loc[id]
+#singleDF = single.to_frame()
+#singleDF = singleDF.T
+#singlePrepared=full_pipeline.transform(singleDF)
+#prediction = newGrid.best_estimator_.predict(singlePrepared)
+#print(prediction)
+
+
 
 #testTail = newLogs.iloc[0]
 #print(testTail.name)
@@ -54,6 +64,16 @@ print(prediction)
 #print(len(testTail))
 #print(testTail.index[0])
 #print(testTail[0])
+with open('test_logs', 'rb') as f:
+    wrongLogs = pickle.load(f)
+
+    hey = wrongLogs.loc[4000:4200]
+    print(hey)
+    print(hey['target'].value_counts())
+
+#with open("pickleLogs/wrongLogs", 'wb') as f:
+#    pickle.dump(hey, f)
+
 
 #start tbe server
 app = FastAPI()
@@ -538,7 +558,22 @@ def read_root():
                     var xhttp = new XMLHttpRequest();
                     xhttp.onreadystatechange = function() {
                         if (this.readyState == 4 && this.status == 200) {
-                        alert("result")
+                            row = document.getElementById(id);
+                            button = row.lastElementChild
+                            row.removeChild(button)
+                            replace = document.createElement("td");
+                            row.appendChild(replace)
+                            //button.style.display = "none";
+                            if(this.responseText ==1){
+                                row.setAttribute("class", "normal")
+                                replace.innerHTML = "Normal"
+                                
+                            }
+                            else{
+                                row.setAttribute("class", "malicious");
+                                replace.innerHTML = "Malicious"
+                                
+                            }
                         }
                     };
                     xhttp.open("GET", "/predict/" + id, true);
@@ -570,7 +605,7 @@ async def favicon():
 @app.get("/items/{items_number}")
 def read_item(items_number: int, q: Optional[str] = None):
 
-    with open('testLogs/newLogs', 'rb') as f:
+    with open('pickleLogs/recentLogs', 'rb') as f:
         newLogs = pickle.load(f)
     #i stands for how many iterations should there be
     if(items_number > len(newLogs)):
@@ -642,7 +677,7 @@ def read_item(items_number: int, q: Optional[str] = None):
 @app.get("/newItems/{items_number}")
 def read_newitem(items_number: int, q: Optional[str] = None):
 
-    with open('testLogs/newLogs', 'rb') as f:
+    with open('pickleLogs/newConnections', 'rb') as f:
         newLogs = pickle.load(f)
     #i stands for how many iterations should there be
     if(items_number > len(newLogs)):
@@ -710,7 +745,7 @@ def read_newitem(items_number: int, q: Optional[str] = None):
 #return model prediction
 @app.get("/predict/{id}")
 def predict(id: int):
-    with open('testLogs/newLogs', 'rb') as f:
+    with open('pickleLogs/newConnections', 'rb') as f:
         newLogs2 = pickle.load(f)
     #load model
     with open('model_pickle', 'rb') as f:
@@ -719,21 +754,62 @@ def predict(id: int):
     single = newLogs2.loc[id]
     singleDF = single.to_frame()
     singleDF = singleDF.T
+    print(single)
+    print(singleDF)
     
     singlePrepared=full_pipeline.transform(singleDF)
     prediction = newGrid2.best_estimator_.predict(singlePrepared)
     result = prediction.item(0)
+
+    with open("pickleLogs/recentLogs", 'rb') as f:
+        recentLogs = pickle.load(f)
+        print("before join")
+        print(recentLogs.tail())
+        print(len(recentLogs))
+        joined = recentLogs.append(singleDF)
+        print("JOINED")
+        print(joined.tail())
+        print(len(joined))
+
     
+    with open("pickleLogs/recentLogs", 'wb') as f:
+        pickle.dump(joined, f)
+
+    print(newLogs2)
+    dropped = newLogs2.drop(index =[id])
+    print(dropped)
+    with open("pickleLogs/newConnections", 'wb') as f:
+        pickle.dump(dropped, f)
     return result
 
 @app.get("/selectStatus/{index}/{newValue}")
 def select_status(index: int, newValue):
-    with open('testLogs/newLogs', 'rb') as f:
+    with open('pickleLogs/recentLogs', 'rb') as f:
         newLogs2 = pickle.load(f)
     newLogs2.at[index, "target"] = newValue
-    with open('testLogs/newLogs', 'wb') as f:
+    with open('pickleLogs/recentLogs', 'wb') as f:
         pickle.dump(newLogs2, f)
 
+    #with open("pickleLogs/wrongLogs", "rb") as g:
+    #    wrongSet = pickle.load(g)
+        
+        #with open("pickleLogs/recentLogs", 'rb') as f:
+        #recentLogs = pickle.load(f)
+    #    print("before join")
+     #   print(wrongSet.tail())
+    #    print(len(wrongSet))
+    #    single = newLogs2.loc[index]
+    #    singleDF = single.to_frame()
+    #    singleDF = singleDF.T
+        
+    #    joined = wrongSet.append(singleDF)
+    #    print("JOINED")
+    #    print(joined.tail())
+    #    print(len(joined))
+    #with open("pickleLogs/wrongLogs", "wb") as f:
+    #    pickle.dump(joined, f)
+
+        #single = newLogs.loc[id]
     
     return 0
 
@@ -748,7 +824,7 @@ def accuracy():
 #Ratio of attacks to total number of logs
 @app.get("/ratio/")
 def ratio():
-    with open('testLogs/test_Logs', 'rb') as f:
+    with open('pickleLogs/recentLogs', 'rb') as f:
         allLogs = pickle.load(f)
         totalTested = allLogs["target"].value_counts()
         totalNormal = totalTested["normal"]
@@ -758,7 +834,7 @@ def ratio():
 #How many attacks occured
 @app.get("/attackNumber/")
 def attackNumber():
-    with open('testLogs/test_logs', 'rb') as f:
+    with open('pickleLogs/recentLogs', 'rb') as f:
         allLogs = pickle.load(f)
         tested = allLogs["target"].value_counts()
         normal1 = tested['normal']
@@ -769,7 +845,7 @@ def attackNumber():
 #How many wrong predictions
 @app.get("/wrongPredictions/")
 def wrongPredictions():
-    with open('wrongLogs/wrongValues_pickle', 'rb') as f:
+    with open('pickleLogs/wrongLogs', 'rb') as f:
         wrongValues = pickle.load(f)
         number = len(wrongValues)
     return number

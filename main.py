@@ -5,6 +5,7 @@ from urllib import response
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
+import pandas
 
 import pickle
 
@@ -38,6 +39,14 @@ with open('test_logs', 'rb') as f:
 with open('testLogs/newLogs', 'rb') as f:
     newLogs = pickle.load(f)
 
+
+id = 4898426
+single = newLogs.loc[id]
+singleDF = single.to_frame()
+singleDF = singleDF.T
+singlePrepared=full_pipeline.transform(singleDF)
+prediction = newGrid.best_estimator_.predict(singlePrepared)
+print(prediction)
 
 #testTail = newLogs.iloc[0]
 #print(testTail.name)
@@ -98,6 +107,9 @@ def read_root():
                     flex-direction: column;
                     justify-content: space-evenly;
                     width: 100%;
+                    padding-left: 10px;
+                    padding-right: 10px;
+
                 }
 
                 #logBox {
@@ -502,6 +514,7 @@ def read_root():
                                 predictButton.addEventListener("click", (event)=>{
                                     //TODO
                                     alert("predict" + temp);
+                                    predict(temp);
                                 })
                                 row.appendChild(predictButton);
                                 tbody.appendChild(row);
@@ -520,6 +533,18 @@ def read_root():
                     getRecent();
                     getNew();
                 }
+
+                function predict(id){
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                        alert("result")
+                        }
+                    };
+                    xhttp.open("GET", "/predict/" + id, true);
+                    xhttp.send();
+                }
+
                 function selectStatus(id, status){
                     console.log("selected: " + id + "newStatus: " + status);
                     
@@ -683,10 +708,23 @@ def read_newitem(items_number: int, q: Optional[str] = None):
 
 
 #return model prediction
-@app.get("/predict/{logs}")
-def predict(array):
-    prediction = newGrid.best_estimator_.predict(array)
-    return prediction
+@app.get("/predict/{id}")
+def predict(id: int):
+    with open('testLogs/newLogs', 'rb') as f:
+        newLogs2 = pickle.load(f)
+    #load model
+    with open('model_pickle', 'rb') as f:
+        newGrid2 = pickle.load(f)
+    
+    single = newLogs2.loc[id]
+    singleDF = single.to_frame()
+    singleDF = singleDF.T
+    
+    singlePrepared=full_pipeline.transform(singleDF)
+    prediction = newGrid2.best_estimator_.predict(singlePrepared)
+    result = prediction.item(0)
+    
+    return result
 
 @app.get("/selectStatus/{index}/{newValue}")
 def select_status(index: int, newValue):
